@@ -20,6 +20,25 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  // console.log(authHeader);
+  if (authHeader) {
+    const token = authHeader?.split(" ")[1];
+    jwt.verify(token, process.env.SECRET_JWT_TOKEN, function (err, decoded) {
+      if (err) {
+        res.status(403).send({ message: "Forbidden Access" });
+      } else {
+        req.decoded = decoded;
+        next();
+      }
+    });
+  }
+  if (!authHeader) {
+    res.status(401).send({ message: "Unauthorized Access" });
+  }
+}
+
 async function run() {
   try {
     await client.connect();
@@ -42,13 +61,13 @@ async function run() {
       res.send({ success: true, result, token });
     });
 
-    app.get("/user", async (req, res) => {
+    app.get("/user", verifyJWT, async (req, res) => {
       const { email } = req.query;
       const user = await userCollection.findOne({ email: email });
       res.send(user);
     });
 
-    app.post("/appointments", async (req, res) => {
+    app.post("/appointments", verifyJWT, async (req, res) => {
       const { email, date } = req.query;
       const query = { email: email, date: date };
       const appoints = await appointmentCollection.findOne(query);
@@ -61,28 +80,28 @@ async function run() {
       }
     });
 
-    app.get("/appointments", async (req, res) => {
+    app.get("/appointments", verifyJWT, async (req, res) => {
       const { email } = req.query;
       const query = { email: email };
       const appoints = await appointmentCollection.find(query).toArray();
       res.send(appoints);
     });
 
-    app.get("/appointments/:id", async (req, res) => {
+    app.get("/appointments/:id", verifyJWT, async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const appoints = await appointmentCollection.findOne(query);
       res.send(appoints);
     });
 
-    app.delete("/appointments/:id", async (req, res) => {
+    app.delete("/appointments/:id", verifyJWT, async (req, res) => {
       const { id } = req.params;
       const query = { _id: ObjectId(id) };
       const appoints = await appointmentCollection.deleteOne(query);
       res.send(appoints);
     });
 
-    app.put("/appointments/:id", async (req, res) => {
+    app.put("/appointments/:id", verifyJWT, async (req, res) => {
       const { id } = req.params;
       const { appointmentId, transactionId } = req.body;
       const filter = { _id: ObjectId(id) };
@@ -103,7 +122,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/create-payment-intent", async (req, res) => {
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;
 
