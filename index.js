@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+var jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
 const app = express();
 const port = process.env.PORT || 5000;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -36,7 +38,8 @@ async function run() {
         },
       };
       const result = await userCollection.updateOne(filter, updateDoc, options);
-      res.send({ success: true, result });
+      var token = jwt.sign(email, process.env.SECRET_JWT_TOKEN);
+      res.send({ success: true, result, token });
     });
 
     app.get("/user", async (req, res) => {
