@@ -79,6 +79,27 @@ async function run() {
       res.send(appoints);
     });
 
+    app.put("/appointments/:id", async (req, res) => {
+      const { id } = req.params;
+      const { appointmentId, transactionId } = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          appointmentId,
+          transactionId,
+        },
+      };
+
+      const result = await appointmentCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+
+      res.send(result);
+    });
+
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;
