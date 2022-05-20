@@ -11,18 +11,34 @@ app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@bloodbuddies.a5wux.mongodb.net/?retryWrites=true&w=majority`;
 
-console.log(uri);
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-client.connect((err) => {
-  const collection = client.db("test").collection("devices");
-  console.log("db connected");
-  // perform actions on the collection object
-  client.close();
-});
+
+async function run() {
+  try {
+    await client.connect();
+    const userCollection = client.db("blood-buddies").collection("users");
+    app.put("/user", async (req, res) => {
+      const { email } = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          email,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+
+      res.send({ success: true, result });
+    });
+  } finally {
+    // await client.close();
+  }
+}
+run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
