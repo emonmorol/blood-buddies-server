@@ -21,6 +21,10 @@ async function run() {
   try {
     await client.connect();
     const userCollection = client.db("blood-buddies").collection("users");
+    const appointmentCollection = client
+      .db("blood-buddies")
+      .collection("appointments");
+
     app.put("/user", async (req, res) => {
       const { email } = req.body;
       const filter = { email: email };
@@ -31,8 +35,31 @@ async function run() {
         },
       };
       const result = await userCollection.updateOne(filter, updateDoc, options);
-
       res.send({ success: true, result });
+    });
+
+    app.get("/user", async (req, res) => {
+      const { email } = req.query;
+      const user = await userCollection.findOne({ email: email });
+      res.send(user);
+    });
+
+    app.post("/appointments", async (req, res) => {
+      const { email, date } = req.query;
+
+      const query = { email: email, date: date };
+
+      const appoints = await appointmentCollection.findOne(query);
+      // if (appoints[0]) {
+
+      // }
+      if (appoints) {
+        res.send({ success: false });
+      } else {
+        const appointment = req.body;
+        const result = await appointmentCollection.insertOne(appointment);
+        res.send({ success: true });
+      }
     });
   } finally {
     // await client.close();
