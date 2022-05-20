@@ -46,13 +46,8 @@ async function run() {
 
     app.post("/appointments", async (req, res) => {
       const { email, date } = req.query;
-
       const query = { email: email, date: date };
-
       const appoints = await appointmentCollection.findOne(query);
-      // if (appoints[0]) {
-
-      // }
       if (appoints) {
         res.send({ success: false });
       } else {
@@ -60,6 +55,13 @@ async function run() {
         const result = await appointmentCollection.insertOne(appointment);
         res.send({ success: true });
       }
+    });
+
+    app.get("/appointments", async (req, res) => {
+      const { email } = req.query;
+      const query = { email: email };
+      const appoints = await appointmentCollection.find(query).toArray();
+      res.send(appoints);
     });
   } finally {
     // await client.close();
