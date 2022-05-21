@@ -22,17 +22,24 @@ const client = new MongoClient(uri, {
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
-  // console.log(authHeader);
+
   if (authHeader) {
-    const token = authHeader?.split(" ")[1];
-    jwt.verify(token, process.env.SECRET_JWT_TOKEN, function (err, decoded) {
-      if (err) {
-        res.status(403).send({ message: "Forbidden Access" });
-      } else {
-        req.decoded = decoded;
-        next();
+    // const token = authHeader.split(" ")[1];
+    // console.log(process.env.SECRET_JWT_TOKEN);
+    // console.log(token);
+    jwt.verify(
+      authHeader,
+      process.env.SECRET_JWT_TOKEN,
+      function (err, decoded) {
+        if (err) {
+          console.log(err);
+          res.status(403).send({ message: "Forbidden Access" });
+        } else {
+          req.decoded = decoded;
+          next();
+        }
       }
-    });
+    );
   }
   if (!authHeader) {
     res.status(401).send({ message: "Unauthorized Access" });
@@ -46,6 +53,7 @@ async function run() {
     const appointmentCollection = client
       .db("blood-buddies")
       .collection("appointments");
+    const photoCollection = client.db("blood-buddies").collection("photos");
 
     app.put("/user", async (req, res) => {
       const { email } = req.body;
@@ -69,6 +77,7 @@ async function run() {
 
     app.post("/appointments", verifyJWT, async (req, res) => {
       const { email, date } = req.query;
+      console.log(email, date);
       const query = { email: email, date: date };
       const appoints = await appointmentCollection.findOne(query);
       if (appoints) {
@@ -136,6 +145,17 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+
+    app.get("/photo", async (req, res) => {
+      const images = await photoCollection.find({}).toArray();
+      res.send(images);
+    });
+
+    app.post("/photo", async (req, res) => {
+      const photo = req.body;
+      const images = await photoCollection.insertOne(photo);
+      res.send(images);
     });
   } finally {
     // await client.close();
