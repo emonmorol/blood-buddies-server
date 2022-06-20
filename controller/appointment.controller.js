@@ -6,6 +6,7 @@ const appointmentCollection = client
   .collection("appointments");
 
 exports.newAppointment = async (req, res) => {
+  await client.connect();
   const { email, date } = req.query;
   console.log(email, date);
   const query = { email: email, date: date };
@@ -20,6 +21,7 @@ exports.newAppointment = async (req, res) => {
 };
 
 exports.allAppointments = async (req, res) => {
+  await client.connect();
   const { email } = req.query;
   const query = { email: email };
   const appoints = await appointmentCollection.find(query).toArray();
@@ -27,6 +29,7 @@ exports.allAppointments = async (req, res) => {
 };
 
 exports.userAppointments = async (req, res) => {
+  await client.connect();
   const { id } = req.params;
   const query = { _id: ObjectId(id) };
   const appoints = await appointmentCollection.findOne(query);
@@ -34,6 +37,7 @@ exports.userAppointments = async (req, res) => {
 };
 
 exports.deleteAppointments = async (req, res) => {
+  await client.connect();
   const { id } = req.params;
   const query = { _id: ObjectId(id) };
   const appoints = await appointmentCollection.deleteOne(query);
@@ -41,6 +45,7 @@ exports.deleteAppointments = async (req, res) => {
 };
 
 exports.appointmentsPay = async (req, res) => {
+  await client.connect();
   const { id } = req.params;
   const { appointmentId, transactionId } = req.body;
   const filter = { _id: ObjectId(id) };

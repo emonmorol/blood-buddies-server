@@ -3,6 +3,7 @@ const client = require("../connection/connection");
 const userCollection = client.db("blood-buddies").collection("users");
 
 exports.putUser = async (req, res) => {
+  await client.connect();
   const { email } = req.body;
   const filter = { email: email };
   const options = { upsert: true };
@@ -17,6 +18,7 @@ exports.putUser = async (req, res) => {
 };
 
 exports.getUser = async (req, res) => {
+  await client.connect();
   const { email } = req.query;
   const user = await userCollection.findOne({ email: email });
   res.send(user);

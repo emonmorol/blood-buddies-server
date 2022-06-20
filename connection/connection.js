@@ -7,5 +7,4 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-client.connect;
 module.exports = client;
