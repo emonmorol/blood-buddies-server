@@ -6,6 +6,7 @@ const galleryRoute = require("./routes/gallary.route");
 const userRoute = require("./routes/user.route");
 const appointmentRoute = require("./routes/appointment.route");
 const stripePaymentRoute = require("./routes/stripePayment.route");
+const reviewRoute = require("./routes/review.route");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use("/photo", galleryRoute);
 app.use("/user", userRoute);
 app.use("/appointments", appointmentRoute);
+app.use("/reviews", reviewRoute);
 app.use("/create-payment-intent", stripePaymentRoute);
 
 /* not found routes */

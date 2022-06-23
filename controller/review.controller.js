@@ -1,9 +1,8 @@
-var jwt = require("jsonwebtoken");
 const client = require("../connection/connection");
 
-const userCollection = client.db("blood-buddies").collection("users");
+const reviewCollection = client.db("blood-buddies").collection("review");
 
-exports.putUser = async (req, res) => {
+exports.postReview = async (req, res) => {
   await client.connect();
   const { email } = req.body;
   const filter = { email: email };
@@ -13,14 +12,13 @@ exports.putUser = async (req, res) => {
       email,
     },
   };
-  const result = await userCollection.updateOne(filter, updateDoc, options);
+  const result = await reviewCollection.updateOne(filter, updateDoc, options);
   var token = jwt.sign(email, process.env.SECRET_JWT_TOKEN);
   res.send({ success: true, result, token });
 };
 
-exports.getUser = async (req, res) => {
+exports.getReview = async (req, res) => {
   await client.connect();
-  const { email } = req.query;
-  const user = await userCollection.findOne({ email: email });
-  res.send(user);
+  const reviews = await reviewCollection.find({}).toArray();
+  res.send(reviews);
 };
